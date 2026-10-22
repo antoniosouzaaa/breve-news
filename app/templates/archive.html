@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="flex items-center justify-between pb-6 border-b border-neutral-800/60">
+  <h1 class="text-xl font-bold tracking-wider text-white">HISTÓRICO<span class="text-orange-500">.</span></h1>
+  <a href="/" class="text-xs text-neutral-400 hover:text-neutral-200">Voltar para hoje</a>
+</header>
+
+<section class="mt-6 space-y-3">
+  <h2 class="text-2xl font-serif text-white">Edições Passadas</h2>
+  <p class="text-xs text-neutral-400">Revisite os briefings de notícias arquivados.</p>
+
+  <div class="divide-y divide-neutral-800/80 mt-6">
+    {% for ed in editions %}
+    <a href="/edicao/{{ ed.edition_date }}" class="flex items-center justify-between py-4 group">
+      <div>
+        <p class="text-sm font-medium text-neutral-200 group-hover:text-orange-400 transition">
+          {{ ed.edition_date.strftime("%d/%m/%Y") }}
+        </p>
+        <span class="text-xs text-neutral-500">{{ ed.articles|length }} pautas resumidas</span>
+      </div>
+      <svg class="w-4 h-4 text-neutral-600 group-hover:text-neutral-300 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+    </a>
+    {% else %}
+    <p class="text-xs text-neutral-500 py-6">Nenhum histórico disponível ainda.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
