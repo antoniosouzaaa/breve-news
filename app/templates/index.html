@@ -270,18 +270,46 @@
 </section>
 
 {% if not edition or not edition.articles %}
-  <!-- Estado Vazio -->
+  <!-- Estado de Compilação Automática / Vazio -->
   <div class="empty-state-box">
-    <h2 class="font-serif" style="font-size: 26px; color: var(--color-text-primary); margin-bottom: 8px;">
-      Nenhuma edição processada para esta data.
-    </h2>
-    <p style="font-size: 14px; color: var(--color-text-secondary); max-width: 440px; margin: 0 auto;">
-      A curadoria diária roda automaticamente às 06:30 BRT. Você também pode disparar a síntese agora com Google Gemini.
-    </p>
-    <button onclick="triggerUpdate()" id="heroGenBtn" class="btn-primary">
-      <span>Gerar Edição de Hoje</span>
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </button>
+    {% if auto_started %}
+      <div style="margin-bottom: 16px;">
+        <svg class="anim-spin" style="margin: 0 auto; color: var(--color-accent);" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+        </svg>
+      </div>
+      <h2 class="font-serif" style="font-size: 26px; color: var(--color-text-primary); margin-bottom: 8px;">
+        Compilando o briefing matinal de hoje com IA...
+      </h2>
+      <p style="font-size: 14px; color: var(--color-text-secondary); max-width: 460px; margin: 0 auto; line-height: 1.6;">
+        Estamos selecionando e sintetizando as matérias factuais de Cultura, Economia, F1, Design e Geral. A página atualizará automaticamente em instantes (~20s).
+      </p>
+      <script>
+        const autoPoll = setInterval(async () => {
+          try {
+            const res = await fetch('/api/status');
+            if (res.ok) {
+              const data = await res.json();
+              if (!data.is_curating) {
+                clearInterval(autoPoll);
+                window.location.reload();
+              }
+            }
+          } catch(e) {}
+        }, 3000);
+      </script>
+    {% else %}
+      <h2 class="font-serif" style="font-size: 26px; color: var(--color-text-primary); margin-bottom: 8px;">
+        Nenhuma edição processada para esta data.
+      </h2>
+      <p style="font-size: 14px; color: var(--color-text-secondary); max-width: 440px; margin: 0 auto;">
+        A curadoria diária roda automaticamente às 06:30 BRT. Você também pode disparar a síntese agora com Google Gemini.
+      </p>
+      <button onclick="triggerUpdate()" id="heroGenBtn" class="btn-primary">
+        <span>Gerar Edição de Hoje</span>
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    {% endif %}
   </div>
 {% else %}
 

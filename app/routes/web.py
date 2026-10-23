@@ -40,9 +40,16 @@ def sort_grouped_articles(grouped_dict):
     return ordered
 
 @router.get("/")
-def home(request: Request, session: Session = Depends(get_session)):
+def home(request: Request, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
     today = get_current_date()
     edition = session.exec(select(Edition).where(Edition.edition_date == today)).first()
+
+    # AUTO-HEALING: Se for hoje e ainda não houver edição gerada, inicia automaticamente em background!
+    auto_started = False
+    if not edition and not is_curating():
+        print(f"Auto-healing: Edição de {today} não encontrada. Disparando curadoria matinal...")
+        background_tasks.add_task(run_daily_curation, force=False)
+        auto_started = True
 
     grouped = defaultdict(list)
     articles_list = []
@@ -62,7 +69,8 @@ def home(request: Request, session: Session = Depends(get_session)):
         "total_articles": total_articles,
         "reading_time": reading_time,
         "today_formatted": format_date_pt(today),
-        "today_formatted_full": format_date_full_pt(today)
+        "today_formatted_full": format_date_full_pt(today),
+        "auto_started": auto_started or is_curating()
     })
 
 @router.get("/arquivo")
