@@ -127,6 +127,10 @@ def service_worker():
 def favicon():
     return FileResponse("app/static/favicon.ico")
 
+@router.get("/favicon.svg")
+def favicon_svg():
+    return FileResponse("app/static/favicon.svg", media_type="image/svg+xml")
+
 @router.get("/apple-touch-icon.png")
 def apple_touch_icon():
     return FileResponse("app/static/icons/apple-touch-icon.png")
