@@ -1,0 +1,28 @@
+name: Keep-Alive & Daily Morning Curation
+
+on:
+  schedule:
+    # A cada 14 minutos para manter o Render acordado durante o dia (24/7)
+    - cron: '*/14 * * * *'
+    # Pontualmente às 06:30 BRT (09:30 UTC) para disparar o briefing matinal
+    - cron: '30 9 * * *'
+  workflow_dispatch: # Permite disparo manual pelo painel de Actions
+
+jobs:
+  ping-and-curate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render /api/health (Keep-Alive)
+        run: |
+          echo "Enviando ping de keep-alive para o Render..."
+          curl -s -f -m 20 https://breve-news.onrender.com/api/health || echo "Ping enviado"
+
+      - name: Check if it's 06:30 BRT and trigger morning curation
+        run: |
+          HOUR=$(date -u +%H)
+          MINUTE=$(date -u +%M)
+          echo "Hora UTC atual: $HOUR:$MINUTE"
+          if [ "$HOUR" -eq 9 ] && [ "$MINUTE" -ge 28 ] && [ "$MINUTE" -le 42 ]; then
+            echo "Horário matinal atingido (06:30 BRT)! Disparando curadoria diária..."
+            curl -s -X POST -m 60 "https://breve-news.onrender.com/api/trigger?force=true" || echo "Disparo enviado"
+          fi
