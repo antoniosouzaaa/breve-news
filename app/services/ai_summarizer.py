@@ -48,25 +48,30 @@ Retorne SOMENTE uma lista em formato JSON válido contendo os objetos. Exemplo:
   }}
 ]
 """
-    try:
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json"
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite"]
+
+    for model_name in models_to_try:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                )
             )
-        )
 
-        raw_text = response.text.strip()
-        if raw_text.startswith("```"):
-            raw_text = re.sub(r"^```[a-zA-Z]*\n?", "", raw_text)
-            raw_text = re.sub(r"\n?```$", "", raw_text)
+            raw_text = response.text.strip()
+            if raw_text.startswith("```"):
+                raw_text = re.sub(r"^```[a-zA-Z]*\n?", "", raw_text)
+                raw_text = re.sub(r"\n?```$", "", raw_text)
 
-        data = json.loads(raw_text)
-        if isinstance(data, list):
-            return data[:3]
-        return _fallback_items(raw_items)
-    except Exception as err:
-        print(f"Erro ao processar curadoria com Gemini para {category_label}: {err}")
-        return _fallback_items(raw_items)
+            data = json.loads(raw_text)
+            if isinstance(data, list) and len(data) > 0:
+                return data[:3]
+        except Exception as err:
+            print(f"Tentativa com {model_name} para {category_label} falhou: {err}")
+            continue
+
+    print(f"Todas as tentativas de IA falharam para {category_label}. Usando fallback das notícias brutas.")
+    return _fallback_items(raw_items)

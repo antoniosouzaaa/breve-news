@@ -44,30 +44,62 @@
   </nav>
 
   <script>
+    let isUpdating = false;
+
     async function triggerUpdate() {
-      if(!confirm("Deseja buscar notícias e sintetizar com IA agora? Isso leva cerca de 10 a 20 segundos.")) return;
+      if (isUpdating) return;
+      if (!confirm("Deseja buscar notícias e sintetizar com IA agora? O processo leva cerca de 20 a 30 segundos.")) return;
+      
+      isUpdating = true;
       const btn = document.getElementById('updateBtn');
       const text = document.getElementById('updateText');
       const icon = document.getElementById('updateSpinner');
-      if(btn) btn.disabled = true;
-      if(text) text.innerText = 'Processando...';
-      if(icon) icon.classList.add('animate-spin');
+      const heroBtn = document.getElementById('heroGenBtn');
+
+      if (btn) btn.disabled = true;
+      if (text) text.innerText = 'Iniciando...';
+      if (icon) icon.classList.add('animate-spin');
+      if (heroBtn) {
+        heroBtn.disabled = true;
+        heroBtn.innerText = 'Processando com IA... Aguarde.';
+      }
 
       try {
         const res = await fetch('/api/trigger?force=true', {method: 'POST'});
-        if(res.ok) {
-          window.location.reload();
-        } else {
-          alert("Erro ao disparar atualização.");
-          if(btn) btn.disabled = false;
-          if(text) text.innerText = 'Atualizar';
-          if(icon) icon.classList.remove('animate-spin');
+        if (!res.ok) {
+          const errData = await res.text();
+          throw new Error("Erro no servidor: " + (errData || res.statusText));
         }
+
+        if (text) text.innerText = 'Curando IA...';
+
+        // Polling para acompanhar o término da curadoria
+        const checkInterval = setInterval(async () => {
+          try {
+            const statusRes = await fetch('/api/status');
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              if (!statusData.is_curating) {
+                clearInterval(checkInterval);
+                if (text) text.innerText = 'Concluído!';
+                setTimeout(() => window.location.reload(), 800);
+              }
+            }
+          } catch (pollErr) {
+            console.error("Erro na verificação de status:", pollErr);
+          }
+        }, 2500);
+
       } catch (e) {
-        alert("Erro na requisição: " + e);
-        if(btn) btn.disabled = false;
-        if(text) text.innerText = 'Atualizar';
-        if(icon) icon.classList.remove('animate-spin');
+        alert("Aviso: " + e.message);
+        isUpdating = false;
+        if (btn) btn.disabled = false;
+        if (text) text.innerText = 'Atualizar';
+        if (icon) icon.classList.remove('animate-spin');
+        if (heroBtn) {
+          heroBtn.disabled = false;
+          heroBtn.innerText = 'Gerar Agora';
+        }
       }
     }
   </script>

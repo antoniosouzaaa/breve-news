@@ -1,11 +1,11 @@
 from collections import defaultdict
 from datetime import date
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models import Edition
-from app.services.scheduler import run_daily_curation, get_current_date
+from app.services.scheduler import run_daily_curation, get_current_date, is_curating
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -61,9 +61,15 @@ def view_edition(edition_date: date, request: Request, session: Session = Depend
     })
 
 @router.post("/api/trigger")
-def trigger(force: bool = False):
-    run_daily_curation(force=force)
-    return {"status": "success", "message": "Curadoria executada com sucesso"}
+def trigger(background_tasks: BackgroundTasks, force: bool = False):
+    if is_curating():
+        return {"status": "already_running", "message": "Curadoria já está em andamento."}
+    background_tasks.add_task(run_daily_curation, force=force)
+    return {"status": "started", "message": "Curadoria iniciada com sucesso em segundo plano."}
+
+@router.get("/api/status")
+def status():
+    return {"is_curating": is_curating()}
 
 @router.get("/api/health")
 def health():
