@@ -1,26 +1,33 @@
+import socket
 import feedparser
 from typing import Dict, List
 
+socket.setdefaulttimeout(10)
+
 FEEDS = {
     "cultura": [
-        {"name": "The Summer Hunter", "url": "https://thesummerhunter.com/feed/"},
-        {"name": "Nexo Cultura", "url": "https://www.nexojornal.com.br/rss/cultura.xml"}
+        {"name": "G1 Pop & Arte", "url": "https://g1.globo.com/rss/g1/pop-arte/"},
+        {"name": "Folha Ilustrada", "url": "https://feeds.folha.uol.com.br/ilustrada/rss091.xml"},
+        {"name": "CartaCapital Cultura", "url": "https://www.cartacapital.com.br/cultura/feed/"}
     ],
     "economia": [
-        {"name": "Valor Econômico", "url": "https://valor.globo.com/rss/brasil/"},
-        {"name": "InfoMoney", "url": "https://www.infomoney.com.br/feed/"}
+        {"name": "InfoMoney", "url": "https://www.infomoney.com.br/feed/"},
+        {"name": "G1 Economia", "url": "https://g1.globo.com/rss/g1/economia/"}
     ],
     "f1": [
-        {"name": "Motorsport F1", "url": "https://motorsport.uol.com.br/rss/f1/news/"},
-        {"name": "Grande Prêmio", "url": "https://www.grandepremio.com.br/feed/"}
+        {"name": "Motorsport Brasil", "url": "https://motorsport.uol.com.br/rss/f1/news/"},
+        {"name": "GE Motor", "url": "https://ge.globo.com/rss/ge/motor/"},
+        {"name": "F1Mania", "url": "https://www.f1mania.net/feed/"}
     ],
     "design": [
-        {"name": "Dezeen", "url": "https://www.dezeen.com/feed/"},
-        {"name": "Designboom", "url": "https://www.designboom.com/feed/"}
+        {"name": "Casa Vogue", "url": "https://casavogue.globo.com/rss/casavogue/"},
+        {"name": "Designerd", "url": "https://www.designerd.com.br/feed/"},
+        {"name": "ArchDaily Brasil", "url": "https://www.archdaily.com.br/br/feed"}
     ],
     "geral": [
         {"name": "BBC News Brasil", "url": "https://feeds.bbci.co.uk/portuguese/rss.xml"},
-        {"name": "Agência Brasil", "url": "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml"}
+        {"name": "Agência Brasil", "url": "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml"},
+        {"name": "G1 Brasil", "url": "https://g1.globo.com/rss/g1/brasil/"}
     ]
 }
 

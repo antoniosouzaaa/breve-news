@@ -25,16 +25,19 @@ def summarize_category_news(category_label: str, raw_items: list) -> list:
     prompt = f"""
 Você é o editor-chefe do aplicativo 'BREVE.', um resumo matinal diário de notícias altamente conciso, confiável e anti-fake news.
 
+REGRA MANDATÓRIA DE IDIOMA:
+TODAS as matérias, títulos e resumos DEVEM ser EXCLUSIVAMENTE em Português do Brasil (PT-BR). Se qualquer termo ou notícia de origem estiver em inglês ou outro idioma, você DEVE traduzir e redigir integralmente em português brasileiro natural, formal e elegante.
+
 Categoria analisada: {category_label.upper()}
 Notícias brutas coletadas:
 {json.dumps(raw_items, ensure_ascii=False, indent=2)}
 
 Sua tarefa:
-1. Escolha estritamente de 2 a no máximo 3 notícias mais relevantes e factuais.
-2. Elimine qualquer rumor, especulação sensacionalista ou redundâncias.
+1. Escolha estritamente de 2 a no máximo 3 notícias mais relevantes, factuais e impactantes.
+2. Elimine qualquer rumor, fofoca vazia, especulação sensacionalista ou redundâncias.
 3. Para cada uma das escolhidas:
-   - "title": Reescreva o título com clareza editorial (máx 80 caracteres).
-   - "summary": Crie um resumo denso de 2 ou 3 frases pontuando o fato, contexto e impacto principal.
+   - "title": Reescreva o título com clareza editorial em Português (máx 80 caracteres).
+   - "summary": Crie um resumo denso de 2 ou 3 frases em Português pontuando o fato central, contexto e impacto.
    - "source_name": Mantenha a fonte original.
    - "source_url": Mantenha o link correspondente.
 
@@ -49,7 +52,7 @@ Retorne SOMENTE uma lista em formato JSON válido contendo os objetos. Exemplo:
 ]
 """
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
-    models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite"]
+    models_to_try = ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"]
 
     for model_name in models_to_try:
         try:

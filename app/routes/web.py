@@ -18,6 +18,18 @@ MESES_PT = {
 def format_date_pt(d: date) -> str:
     return f"{d.day:02d} de {MESES_PT.get(d.month, '')}"
 
+ORDERED_CATEGORIES = ["cultura", "economia", "f1", "design", "geral"]
+
+def sort_grouped_articles(grouped_dict):
+    ordered = {}
+    for cat in ORDERED_CATEGORIES:
+        if cat in grouped_dict and grouped_dict[cat]:
+            ordered[cat] = grouped_dict[cat]
+    for cat, items in grouped_dict.items():
+        if cat not in ordered and items:
+            ordered[cat] = items
+    return ordered
+
 @router.get("/")
 def home(request: Request, session: Session = Depends(get_session)):
     today = get_current_date()
@@ -31,7 +43,7 @@ def home(request: Request, session: Session = Depends(get_session)):
     return templates.TemplateResponse("index.html", {
         "request": request,
         "edition": edition,
-        "grouped_articles": grouped,
+        "grouped_articles": sort_grouped_articles(grouped),
         "today_formatted": format_date_pt(today)
     })
 
@@ -56,7 +68,7 @@ def view_edition(edition_date: date, request: Request, session: Session = Depend
     return templates.TemplateResponse("index.html", {
         "request": request,
         "edition": edition,
-        "grouped_articles": grouped,
+        "grouped_articles": sort_grouped_articles(grouped),
         "today_formatted": format_date_pt(edition_date)
     })
 
