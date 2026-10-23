@@ -8,6 +8,15 @@
   <meta name="theme-color" content="#FAF9F6" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#171715" media="(prefers-color-scheme: dark)">
 
+  <!-- PWA & Ícones -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BREVE.">
+  <meta name="application-name" content="BREVE.">
+
   <!-- Script anti-FOUC para evitar flash de tema incorreto -->
   <script>
     (function() {
@@ -360,7 +369,8 @@
         <p style="font-weight: 600; color: var(--color-text-primary); margin-bottom: 4px;">BREVE<span style="color: var(--color-accent)">.</span></p>
         <p>Curadoria jornalística assistida por inteligência artificial. Sem clickbait, direto ao ponto.</p>
       </div>
-      <div style="display: flex; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <button id="pwaInstallBtn" onclick="installPwa()" style="display:none; color: var(--color-accent); font-weight: 500; font-size: 13px;">📲 Instalar App</button>
         <a href="/" style="color: var(--color-text-secondary); hover:color: var(--color-text-primary);">Hoje</a>
         <a href="/arquivo" style="color: var(--color-text-secondary); hover:color: var(--color-text-primary);">Histórico</a>
         <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" style="color: var(--color-text-secondary);">Topo ↑</a>
@@ -481,6 +491,40 @@
           heroBtn.innerText = 'Gerar Edição de Hoje';
         }
       }
+    }
+
+    /* ==========================================================================
+       PWA SERVICE WORKER & INSTALAÇÃO
+       ========================================================================== */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((reg) => console.log('PWA ServiceWorker registrado:', reg.scope))
+          .catch((err) => console.warn('Falha no ServiceWorker:', err));
+      });
+    }
+
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('pwaInstallBtn');
+      if (btn) btn.style.display = 'inline-block';
+    });
+
+    async function installPwa() {
+      if (!deferredPrompt) {
+        showToast("No iOS: toque em Compartilhar e 'Adicionar à Tela de Início'", false, false);
+        return;
+      }
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        const btn = document.getElementById('pwaInstallBtn');
+        if (btn) btn.style.display = 'none';
+        showToast("App instalado com sucesso na tela inicial!", true, false);
+      }
+      deferredPrompt = null;
     }
   </script>
 </body>

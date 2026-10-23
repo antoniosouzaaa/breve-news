@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import date
 from fastapi import APIRouter, Request, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from app.database import get_session
@@ -112,3 +113,20 @@ def status():
 @router.get("/api/health")
 def health():
     return {"status": "ok"}
+
+# Endpoints PWA & Assets de Raiz
+@router.get("/manifest.json")
+def manifest():
+    return FileResponse("app/static/manifest.json", media_type="application/manifest+json")
+
+@router.get("/sw.js")
+def service_worker():
+    return FileResponse("app/static/sw.js", media_type="application/javascript")
+
+@router.get("/favicon.ico")
+def favicon():
+    return FileResponse("app/static/favicon.ico")
+
+@router.get("/apple-touch-icon.png")
+def apple_touch_icon():
+    return FileResponse("app/static/icons/apple-touch-icon.png")
