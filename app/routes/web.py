@@ -15,8 +15,16 @@ MESES_PT = {
     7: "jul", 8: "ago", 9: "set", 10: "out", 11: "nov", 12: "dez"
 }
 
+MESES_PT_EXTENSO = {
+    1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho",
+    7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+}
+
 def format_date_pt(d: date) -> str:
     return f"{d.day:02d} de {MESES_PT.get(d.month, '')}"
+
+def format_date_full_pt(d: date) -> str:
+    return f"{d.day:02d} de {MESES_PT_EXTENSO.get(d.month, '')}"
 
 ORDERED_CATEGORIES = ["cultura", "economia", "f1", "design", "geral"]
 
@@ -36,15 +44,24 @@ def home(request: Request, session: Session = Depends(get_session)):
     edition = session.exec(select(Edition).where(Edition.edition_date == today)).first()
 
     grouped = defaultdict(list)
+    articles_list = []
     if edition:
-        for article in edition.articles:
+        articles_list = edition.articles
+        for article in articles_list:
             grouped[article.category].append(article)
+
+    sorted_grouped = sort_grouped_articles(grouped)
+    total_articles = len(articles_list)
+    reading_time = max(2, round(total_articles * 0.7)) if total_articles else 3
 
     return templates.TemplateResponse("index.html", {
         "request": request,
         "edition": edition,
-        "grouped_articles": sort_grouped_articles(grouped),
-        "today_formatted": format_date_pt(today)
+        "grouped_articles": sorted_grouped,
+        "total_articles": total_articles,
+        "reading_time": reading_time,
+        "today_formatted": format_date_pt(today),
+        "today_formatted_full": format_date_full_pt(today)
     })
 
 @router.get("/arquivo")
@@ -62,14 +79,23 @@ def view_edition(edition_date: date, request: Request, session: Session = Depend
         raise HTTPException(status_code=404, detail="Edição não encontrada")
 
     grouped = defaultdict(list)
-    for article in edition.articles:
+    articles_list = edition.articles
+    for article in articles_list:
         grouped[article.category].append(article)
+
+    sorted_grouped = sort_grouped_articles(grouped)
+    total_articles = len(articles_list)
+    reading_time = max(2, round(total_articles * 0.7)) if total_articles else 3
 
     return templates.TemplateResponse("index.html", {
         "request": request,
         "edition": edition,
-        "grouped_articles": sort_grouped_articles(grouped),
-        "today_formatted": format_date_pt(edition_date)
+        "grouped_articles": sorted_grouped,
+        "total_articles": total_articles,
+        "reading_time": reading_time,
+        "today_formatted": format_date_pt(edition_date),
+        "today_formatted_full": format_date_full_pt(edition_date),
+        "is_past_edition": True
     })
 
 @router.post("/api/trigger")
